@@ -20,7 +20,7 @@ https://codepen.io/Sphinxxxx/pen/xazoQN
 Download `vanilla-picker-mini.js` from the `/dist` folder, or use a CDN:
 
 ```
-<script src="https://cdn.rawgit.com/Sphinxxxx/vanilla-picker/v1.0.0/dist/vanilla-picker-mini.min.js"></script>
+<script src="https://cdn.rawgit.com/Sphinxxxx/vanilla-picker-mini/v1.0.0/dist/vanilla-picker-mini.min.js"></script>
 ```
 
 #### Usage
