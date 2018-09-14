@@ -1,7 +1,0 @@
-{
-    "opts": {
-        "destination": "./docs/gen",
-        "sort": false
-    },
-    "plugins": ["plugins/markdown"]
-}

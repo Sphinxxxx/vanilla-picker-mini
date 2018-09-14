@@ -1,7 +1,7 @@
 {
-  "name": "vanilla-picker",
-  "version": "2.5.0",
-  "description": "A simple, easy to use vanilla JS color picker with alpha selection.",
+  "name": "vanilla-picker-mini",
+  "version": "1.0.0",
+  "description": "A simple, easy to use color picker with alpha selection.",
   "keywords": [
     "ux",
     "ui",
@@ -21,48 +21,29 @@
     "alpha"
   ],
   "author": "Andreas Borgen (https://github.com/Sphinxxxx), Adam Brooks (https://github.com/dissimulate)",
-  "homepage": "https://vanilla-picker.js.org",
+  "homepage": "https://github.com/Sphinxxxx/vanilla-picker-mini",
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Sphinxxxx/vanilla-picker.git"
+    "url": "https://github.com/Sphinxxxx/vanilla-picker-mini.git"
   },
   "bugs": {
-    "url": "https://github.com/Sphinxxxx/vanilla-picker/issues"
+    "url": "https://github.com/Sphinxxxx/vanilla-picker-mini/issues"
   },
-  "main": "dist/vanilla-picker.js",
-  "unpkg": "dist/vanilla-picker.min.js",
-  "module": "src/picker.js",
-  "files": [
-    "src/",
-    "dist/"
-  ],
-  "scripts": {
-    "prepublish": "bash ./scripts/prepub.sh",
-    "postpublish": "bash ./scripts/postpub.sh",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "main": "dist/vanilla-picker-mini.js",
+  "private": true,
   "devDependencies": {
     "babel-core": "^6.26.3",
-    "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-env": "^1.7.0",
-    "babel-register": "^6.26.0",
     "gulp": "^4.0.0",
-    "gulp-file": "^0.4.0",
     "gulp-header": "^2.0.5",
-    "gulp-jsdoc3": "^2.0.0",
+    "gulp-include": "^2.3.1",
     "gulp-rename": "^1.2.3",
     "gulp-replace": "^1.0.0",
     "gulp-strip-comments": "^2.5.2",
     "gulp-uglify": "^3.0.0",
+    "gulp-umd": "^2.0.0",
     "node-sass": "^4.9.0",
-    "pug": "^2.0.3",
-    "rollup": "^0.59.1",
-    "rollup-plugin-babel": "^3.0.4",
-    "rollup-plugin-node-resolve": "^3.3.0"
-  },
-  "dependencies": {
-    "@sphinxxxx/color-conversion": "^2.1.1",
-    "drag-tracker": "^1.0.0"
+    "pug": "^2.0.3"
   }
 }

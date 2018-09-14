@@ -3,11 +3,10 @@
 <html>
 
 <head>
-    <title>vanilla-picker</title>
+    <title>vanilla-picker-mini</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <script src="../dist/vanilla-picker.js?31415926"></script>
-    <script _src="https://unpkg.com/vanilla-picker@2.4"></script>
+    <script src="../dist/vanilla-picker-mini.js"></script>
 
     <style>
         body {
@@ -97,16 +96,16 @@
 </head>
 
 <body>
-    <h1><a href="https://vanilla-picker.js.org">vanilla-picker</a> demo</h1>
+    <h1><a href="https://github.com/Sphinxxxx/vanilla-picker-mini">vanilla-picker-mini</a> demo</h1>
 
     <div id="main-color"></div>
 
     <h2>Shared picker</h2>
     <ul id="shared">
-        <li id="shared-1" style="background-color:tomato;"></li>
-        <li id="shared-2" style="background-color:lime;"></li>
-        <li id="shared-3" style="background-color:dodgerblue;"></li>
-        <li id="shared-4" style="background-color:gold;"></li>
+        <li id="shared-1" style="background-color:#F00;"></li>
+        <li id="shared-2" style="background-color:#0F0;"></li>
+        <li id="shared-3" style="background-color:#00F;"></li>
+        <li id="shared-4" style="background-color:#FF0;"></li>
     </ul>
 
     <a href="#" id="basic" class="popup-parent" style="top:45%;left:1em;">
@@ -150,7 +149,7 @@
         /* Basic example */
         popupBasic = new Picker(parentBasic);
         popupBasic.onDone = function(color) {
-            parentBasic.style.background = color.rgbaString;
+            parentBasic.style.background = color.rgbaString();
         };
         //Open the popup manually:
         popupBasic.openHandler();
@@ -162,7 +161,7 @@
             popup: customPlacement.value,
             color: '#dbeb',
             onDone: function(color) {
-                parentCustom.style.background = color.rgbaString;
+                parentCustom.style.background = color.rgbaString();
             },
         });
         customPlacement.onchange = function(e) {
@@ -181,7 +180,7 @@
         /* Shared picker */
         popupShared = new Picker({
             onChange: function(color) {
-                this.settings.parent.style.backgroundColor = color.rgbaString;
+                this.settings.parent.style.backgroundColor = color.rgbaString();
             }
         });
         parentShared.addEventListener('click', function(e) {
@@ -203,16 +202,16 @@
             editor: false,
             color: '#cef6',
             onChange: function(color) {
-                document.body.style.backgroundColor = color.rgbaString;
+                document.body.style.backgroundColor = color.rgbaString();
             },
         });
-        pickerFixed.setColor('lime', true);
+        pickerFixed.setColor('#0F0', true);
 
 
         //*
         [popupBasic, popupCustom, popupShared, pickerFixed].forEach(p => {
-            p.onOpen  = function(color) { console.log('Opened', this.settings.parent.id, color.hex); };
-            p.onClose = function(color) { console.log('Closed', this.settings.parent.id, color.hex); };
+            p.onOpen  = function(color) { console.log('Opened', this.settings.parent.id, color.hex()); };
+            p.onClose = function(color) { console.log('Closed', this.settings.parent.id, color.hex()); };
         });
         //*/
     </script>

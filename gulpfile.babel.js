@@ -1,44 +1,29 @@
-//https://medium.com/@andrewhenderson/es6-with-babel-6-gulp-and-rollup-aa7aeddeccc6
-//https://github.com/gulpjs/gulp#use-latest-javascript-version-in-your-gulpfile
-//
-//  npm i -D  babel-core  gulp@next gulp-file gulp-sass  rollup rollup-plugin-node-resolve rollup-plugin-babel babel-preset-env babel-plugin-external-helpers
-//
-//For cleanup/minification:
-//  npm i -D  gulp-strip-comments gulp-header gulp-uglify gulp-rename
-//
-//(Ignore warning "Failed to load external module @babel/register")
-//https://github.com/gulpjs/gulp/issues/1631
-
-
 import * as pkg from './package.json';
 
 import gulp from 'gulp';
-import file from 'gulp-file';
+
+//Bundling:
 import sass from 'node-sass';
 import pug  from 'pug';
-import { rollup } from 'rollup';
-import babel from 'rollup-plugin-babel';
-//If the code imports modules from /node_modules
-import resolve from 'rollup-plugin-node-resolve';
-
-//Cleanup & minification step:
+import include from 'gulp-include';
 import replace from 'gulp-replace';
+import umd from 'gulp-umd';
+
+//Cleanup & minification:
 import strip  from 'gulp-strip-comments';
 import header from 'gulp-header';
 import rename from 'gulp-rename';
 import uglify from 'gulp-uglify';
 
-//Documentation
-import jsdoc from 'gulp-jsdoc3';
-
 //Automatically build/reload on file changes:
 import { spawn } from 'child_process';
 
 
-const globalName = 'Picker',
+const inFile = 'src/main.js',
+      globalName = 'Picker',
       outFolder = 'dist/',
       //Remove scope (if any) from output path:
-      outFile = pkg.name.replace(/.*\//, '');
+      outFile = pkg.name.replace(/.*\//, '') + '.js';
 
 const myBanner = `/*!
  * <%= pkg.name %> v<%= pkg.version %>
@@ -50,103 +35,46 @@ const myBanner = `/*!
 `;
 
 
-//https://github.com/cssmagic/gulp-stream-to-promise/blob/master/index.js
-function stream2Promise(stream) {
-	return new Promise(function(resolve, reject) {
-		stream.on('finish', resolve)
-		      //https://github.com/sindresorhus/gulp-size/issues/13
-			  .on('end', resolve)
-			  .on('error', reject);
-	});
-}
+/* Generate the /dist files */
 
 gulp.task('build', function(cb) {
-    return rollup({
-        input: pkg.module,
-        plugins: [
-            resolve({
-                module: true,
-            }),
-            babel({
-                babelrc: false,
-                presets: [
-                  ["env", { modules: false/*, loose: true*/ }]
-                ],
-                //We import ES6 modules (color-conversion and drag-tracker)..
-                //  exclude: 'node_modules/**',
 
-                plugins: ["external-helpers"],
-            }),
-        ],
-    })
-    .then(bundle => {
-        return bundle.generate({
-          format: 'umd',
-          name: globalName,
-        });
-    })
-    .then(gen => {
-
-        /* Generate the JSDoc documentation */
-
-        //Looks like stream2Promise() won't wait until the docs are built here
-        //so we need to pass a callback to jsdoc()..
-        const promDocs = new Promise(function(resolve, reject) {
-            //https://github.com/mlucool/gulp-jsdoc3#usage
-            const config = require('./docs/jsdoc.json');
-            gulp.src(['README.md', './src/**/*.js'], { read: false })
-                .pipe(jsdoc(config, resolve));
-        });
-        
-        /* Generate the /dist files */
-        
-        //  //Before we create the destination file, prepare the CSS which we'll paste into the JS code:
-        //  //https://github.com/dlmanning/gulp-sass#basic-usage
-        //  gulp.src(pkg.module.replace('.js', '.scss'))
-        //      .pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
-        //  
-        //      //https://stackoverflow.com/questions/41523743/can-i-convert-a-gulp-stream-into-a-string
-        //      .on('data', function(cssStream) {
-        //          const css = cssStream.contents.toString();
-        //          //console.log(css);
-
-        //Easier to use the normal node packages to read the HTML and CSS we'll inline into the JS:
-        const sassed = sass.renderSync({
-            file: pkg.module.replace('.js', '.scss'),
-            outputStyle: 'compressed',
-        });
-        const css = sassed.css.toString(); //(Buffer.toString())
-        //console.log('CSS:', css);
-        
-        const html = pug.renderFile(pkg.module.replace('.js', '.pug'));
-        //console.log('HTML:', html);
-
-        const promDist = stream2Promise(
-            file(outFile + '.js', gen.code, { src: true })
-                .pipe(strip())
-                .pipe(replace( '## PLACEHOLDER-CSS ##', css.replace(/'/g, "\\'").trim() ))
-                .pipe(replace( '## PLACEHOLDER-HTML ##', html ))
-    
-                //Write un-minified:
-                .pipe(header(myBanner, { pkg : pkg }))
-                .pipe(gulp.dest(outFolder))
-    
-                //Minify:
-                //https://codehangar.io/concatenate-and-minify-javascript-with-gulp/
-                //https://stackoverflow.com/questions/32656647/gulp-bundle-then-minify
-                //(https://stackoverflow.com/questions/40609393/gulp-rename-illegal-operation)
-                .pipe(rename({ extname: '.min.js' }))
-                .pipe(uglify())
-    
-                .pipe(header(myBanner, { pkg: pkg }))
-                .pipe(gulp.dest(outFolder))
-        );
-
-        //      });
-
-        //console.log('returning dist');
-        return Promise.all([promDocs, promDist]);
+    //Compile the HTML and CSS we'll inline into the JS:
+    const sassed = sass.renderSync({
+        file: inFile.replace('.js', '.scss'),
+        outputStyle: 'compressed',
     });
+    const css = sassed.css.toString(); //(Buffer.toString())
+    //console.log('CSS:', css);
+    
+    const html = pug.renderFile(inFile.replace('.js', '.pug'));
+    //console.log('HTML:', html);
+
+    return gulp.src(inFile)
+        .pipe(include())
+          .on('error', console.log)
+
+        .pipe(replace( '## PLACEHOLDER-CSS ##', css.replace(/'/g, "\\'").trim() ))
+        .pipe(replace( '## PLACEHOLDER-HTML ##', html ))
+        
+        //UMD wrapper
+        .pipe(umd({
+            exports:   (file) => globalName,
+            namespace: (file) => globalName,
+        }))
+
+        //Write un-minified:
+        .pipe(strip())
+        .pipe(rename(outFile ))
+        .pipe(header(myBanner, { pkg : pkg }))
+        .pipe(gulp.dest(outFolder))
+
+        //Minify:
+        .pipe(rename({ extname: '.min.js' }))
+        .pipe(uglify())
+
+        .pipe(header(myBanner, { pkg: pkg }))
+        .pipe(gulp.dest(outFolder))
 });
 
 
