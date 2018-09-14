@@ -64,7 +64,7 @@ gulp.task('build', function(cb) {
         }))
 
         //Write un-minified:
-        .pipe(strip())
+        //.pipe(strip())
         .pipe(rename(outFile ))
         .pipe(header(myBanner, { pkg : pkg }))
         .pipe(gulp.dest(outFolder))
