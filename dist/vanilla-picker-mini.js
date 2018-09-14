@@ -1,5 +1,5 @@
 /*!
- * vanilla-picker-mini v1.0.1
+ * vanilla-picker-mini v1.0.2
  * https://github.com/Sphinxxxx/vanilla-picker-mini
  *
  * Copyright 2017-2018 Andreas Borgen (https://github.com/Sphinxxxx), Adam Brooks (https://github.com/dissimulate)
@@ -83,21 +83,35 @@ function dragTrack(area, callback) {
         if (button === 1) {
             onMove(e, e, starting);
         }
+        //`mouseup` outside of window:
+        else {
+            dragging = false;
+        }
     }
 
     function onTouch(e, starting) {
         if (e.touches.length === 1) {
             onMove(e, e.touches[0], starting);
         }
+        //Don't interfere with pinch-to-zoom etc:
+        else {
+            dragging = false;
+        }
     }
 
-    addEvent(area, 'mousedown',   function(e) { onMouse(e, true); });
-    addEvent(area, 'touchstart',  function(e) { onTouch(e, true); });
-    addEvent(area, 'mousemove',   onMouse);
-    addEvent(area, 'touchmove',   onTouch);
-    addEvent(area, 'mouseup',     function(e) { dragging = false; });
-    addEvent(area, 'touchend',    function(e) { dragging = false; });
-    addEvent(area, 'touchcancel', function(e) { dragging = false; });
+    //Notice how we must listen on the whole window to really keep track of mouse movements,
+    //while touch movements "stick" to the original target from `touchstart` (which works well for our purposes here):
+    //
+    //  https://stackoverflow.com/a/51750458/1869660
+    //  "Mouse moves = *hover* like behavior. Touch moves = *drags* like behavior"
+    //
+    addEvent(area,   'mousedown',   function(e) { onMouse(e, true); });
+    addEvent(area,   'touchstart',  function(e) { onTouch(e, true); });
+    addEvent(window, 'mousemove',   onMouse);
+    addEvent(area,   'touchmove',   onTouch);
+    addEvent(window, 'mouseup',     function(e) { dragging = false; });
+    addEvent(area,   'touchend',    function(e) { dragging = false; });
+    addEvent(area,   'touchcancel', function(e) { dragging = false; });
 }
 
 /* Color conversion */
@@ -389,6 +403,9 @@ var Picker = (function() {
 
     var BG_TRANSP = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'2\' height=\'2\'%3E%3Cpath d=\'M1,0H0V1H2V2H1\' fill=\'lightgrey\'/%3E%3C/svg%3E")';
     var HUES = 360;
+    
+    var EVENT_CLICK_OUTSIDE = 'mousedown';
+    var EVENT_TAB_MOVE = 'focusin';
 
     //We need to use keydown instead of keypress to handle Esc from the editor textbox:
     var EVENT_KEY = 'keydown'; //'keypress'
@@ -598,6 +615,7 @@ var Picker = (function() {
      */
     pp.closeHandler = function(e) {
         var parent = this.settings.parent,
+            event = e && e.type,
             doHide = false;
     
         //Close programmatically:
@@ -605,7 +623,7 @@ var Picker = (function() {
             doHide = true;
         }
         //Close by clicking/tabbing outside the popup:
-        else if (e.type === 'mousedown' || e.type === 'focusin') {
+        else if (event === EVENT_CLICK_OUTSIDE || event === EVENT_TAB_MOVE) {
     
             //Note: Now that we have added the 'focusin' event,
             //this trick requires the picker wrapper to be focusable (via `tabindex` - see /src/picker.pug),
@@ -626,7 +644,11 @@ var Picker = (function() {
             parent.style.pointerEvents = '';
     
             //Recommended popup behavior from http://whatsock.com/tsg/Coding%20Arena/Popups/Popup%20(Internal%20Content)/demo.htm
-            parent.focus();
+            //However, we don't re-focus the parent if the user closes the popup by clicking somewhere else on the screen,
+            //because they may have scrolled to a different part of the page by then, and focusing would then inadvertently scroll the parent back into view:
+            if(event !== EVENT_CLICK_OUTSIDE) {
+                parent.focus();
+            }
     
             if (this.onClose) {
                 this.onClose(this.color);
@@ -701,7 +723,7 @@ var Picker = (function() {
             return toggled;
         }
     
-        var html = settings.template || '<div class="picker_wrapper" tabindex="-1"><div class="picker_arrow"></div><div class="picker_hue picker_slider"><div class="picker_selector"></div></div><div class="picker_sl"><div class="picker_selector"></div></div><div class="picker_alpha picker_slider"><div class="picker_selector"></div></div><div class="picker_editor"><input aria-label="Type a color name or hex value"/></div><div class="picker_sample"></div><div class="picker_done"><button>Ok</button></div></div>';
+        var html = settings.template || '<div class="picker_wrapper" tabindex="-1"><div class="picker_arrow"></div><div class="picker_hue picker_slider"><div class="picker_selector"></div></div><div class="picker_sl"><div class="picker_selector"></div></div><div class="picker_alpha picker_slider"><div class="picker_selector"></div></div><div class="picker_editor"><input aria-label="Type a color HEX, RGB or HSL value"/></div><div class="picker_sample"></div><div class="picker_done"><button>Ok</button></div></div>';
         var wrapper = parseHTML(html);
     
         this.domElement = wrapper;
@@ -812,12 +834,12 @@ var Picker = (function() {
             }
         }
     
-        addEvent(window, 'mousedown', popupCloseProxy);
-        addEvent(window, 'focusin',   popupCloseProxy); //Keyboard navigation, closeHandler() will check if focus has moved outside the popup.
-        onKey(dom, ['Esc', 'Escape'], popupCloseProxy);
+        addEvent(window, EVENT_CLICK_OUTSIDE, popupCloseProxy);
+        addEvent(window, EVENT_TAB_MOVE,      popupCloseProxy); //Keyboard navigation, closeHandler() will check if focus has moved outside the popup.
+        onKey(   dom,    ['Esc', 'Escape'],   popupCloseProxy);
     
-        addEvent(this._domOkay, 'click', onDoneProxy);
-        onKey(dom, ['Enter'], onDoneProxy);
+        addEvent(this._domOkay, 'click',   onDoneProxy);
+        onKey(   dom,           ['Enter'], onDoneProxy);
     };
     
     /**

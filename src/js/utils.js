@@ -65,19 +65,33 @@ function dragTrack(area, callback) {
         if (button === 1) {
             onMove(e, e, starting);
         }
+        //`mouseup` outside of window:
+        else {
+            dragging = false;
+        }
     }
 
     function onTouch(e, starting) {
         if (e.touches.length === 1) {
             onMove(e, e.touches[0], starting);
         }
+        //Don't interfere with pinch-to-zoom etc:
+        else {
+            dragging = false;
+        }
     }
 
-    addEvent(area, 'mousedown',   function(e) { onMouse(e, true); });
-    addEvent(area, 'touchstart',  function(e) { onTouch(e, true); });
-    addEvent(area, 'mousemove',   onMouse);
-    addEvent(area, 'touchmove',   onTouch);
-    addEvent(area, 'mouseup',     function(e) { dragging = false; });
-    addEvent(area, 'touchend',    function(e) { dragging = false; });
-    addEvent(area, 'touchcancel', function(e) { dragging = false; });
+    //Notice how we must listen on the whole window to really keep track of mouse movements,
+    //while touch movements "stick" to the original target from `touchstart` (which works well for our purposes here):
+    //
+    //  https://stackoverflow.com/a/51750458/1869660
+    //  "Mouse moves = *hover* like behavior. Touch moves = *drags* like behavior"
+    //
+    addEvent(area,   'mousedown',   function(e) { onMouse(e, true); });
+    addEvent(area,   'touchstart',  function(e) { onTouch(e, true); });
+    addEvent(window, 'mousemove',   onMouse);
+    addEvent(area,   'touchmove',   onTouch);
+    addEvent(window, 'mouseup',     function(e) { dragging = false; });
+    addEvent(area,   'touchend',    function(e) { dragging = false; });
+    addEvent(area,   'touchcancel', function(e) { dragging = false; });
 }

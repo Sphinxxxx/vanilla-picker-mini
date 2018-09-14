@@ -14,6 +14,9 @@ var Picker = (function() {
 
     var BG_TRANSP = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'2\' height=\'2\'%3E%3Cpath d=\'M1,0H0V1H2V2H1\' fill=\'lightgrey\'/%3E%3C/svg%3E")';
     var HUES = 360;
+    
+    var EVENT_CLICK_OUTSIDE = 'mousedown';
+    var EVENT_TAB_MOVE = 'focusin';
 
     //We need to use keydown instead of keypress to handle Esc from the editor textbox:
     var EVENT_KEY = 'keydown'; //'keypress'
@@ -223,6 +226,7 @@ var Picker = (function() {
      */
     pp.closeHandler = function(e) {
         var parent = this.settings.parent,
+            event = e && e.type,
             doHide = false;
     
         //Close programmatically:
@@ -230,7 +234,7 @@ var Picker = (function() {
             doHide = true;
         }
         //Close by clicking/tabbing outside the popup:
-        else if (e.type === 'mousedown' || e.type === 'focusin') {
+        else if (event === EVENT_CLICK_OUTSIDE || event === EVENT_TAB_MOVE) {
     
             //Note: Now that we have added the 'focusin' event,
             //this trick requires the picker wrapper to be focusable (via `tabindex` - see /src/picker.pug),
@@ -251,7 +255,11 @@ var Picker = (function() {
             parent.style.pointerEvents = '';
     
             //Recommended popup behavior from http://whatsock.com/tsg/Coding%20Arena/Popups/Popup%20(Internal%20Content)/demo.htm
-            parent.focus();
+            //However, we don't re-focus the parent if the user closes the popup by clicking somewhere else on the screen,
+            //because they may have scrolled to a different part of the page by then, and focusing would then inadvertently scroll the parent back into view:
+            if(event !== EVENT_CLICK_OUTSIDE) {
+                parent.focus();
+            }
     
             if (this.onClose) {
                 this.onClose(this.color);
@@ -437,12 +445,12 @@ var Picker = (function() {
             }
         }
     
-        addEvent(window, 'mousedown', popupCloseProxy);
-        addEvent(window, 'focusin',   popupCloseProxy); //Keyboard navigation, closeHandler() will check if focus has moved outside the popup.
-        onKey(dom, ['Esc', 'Escape'], popupCloseProxy);
+        addEvent(window, EVENT_CLICK_OUTSIDE, popupCloseProxy);
+        addEvent(window, EVENT_TAB_MOVE,      popupCloseProxy); //Keyboard navigation, closeHandler() will check if focus has moved outside the popup.
+        onKey(   dom,    ['Esc', 'Escape'],   popupCloseProxy);
     
-        addEvent(this._domOkay, 'click', onDoneProxy);
-        onKey(dom, ['Enter'], onDoneProxy);
+        addEvent(this._domOkay, 'click',   onDoneProxy);
+        onKey(   dom,           ['Enter'], onDoneProxy);
     };
     
     /**
