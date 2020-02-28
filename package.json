@@ -1,6 +1,6 @@
 {
   "name": "vanilla-picker-mini",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "A simple, easy to use color picker with alpha selection.",
   "keywords": [
     "ux",
@@ -31,7 +31,16 @@
     "url": "https://github.com/Sphinxxxx/vanilla-picker-mini/issues"
   },
   "main": "dist/vanilla-picker-mini.js",
-  "private": true,
+  "unpkg": "dist/vanilla-picker-mini.min.js",
+  "files": [
+    "src/",
+    "dist/"
+  ],
+  "scripts": {
+    "prepublish": "bash ./scripts/prepub.sh",
+    "postpublish": "bash ./scripts/postpub.sh",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-preset-env": "^1.7.0",

@@ -1,8 +1,8 @@
 /*!
- * vanilla-picker-mini v1.0.2
+ * vanilla-picker-mini v1.1.0
  * https://github.com/Sphinxxxx/vanilla-picker-mini
  *
- * Copyright 2017-2018 Andreas Borgen (https://github.com/Sphinxxxx), Adam Brooks (https://github.com/dissimulate)
+ * Copyright 2017-2020 Andreas Borgen (https://github.com/Sphinxxxx), Adam Brooks (https://github.com/dissimulate)
  * Released under the ISC license.
  */
 ;(function(root, factory) {
@@ -995,6 +995,9 @@ var Picker = (function() {
     return Picker;
 })();
 
+
+//https://github.com/Sphinxxxx/vanilla-picker-mini/issues/2
+Picker.Color = Color;
 
 return Picker;
 }));
