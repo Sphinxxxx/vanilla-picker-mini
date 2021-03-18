@@ -1,8 +1,8 @@
 /*!
- * vanilla-picker-mini v1.1.0
+ * vanilla-picker-mini v1.1.1
  * https://github.com/Sphinxxxx/vanilla-picker-mini
  *
- * Copyright 2017-2020 Andreas Borgen (https://github.com/Sphinxxxx), Adam Brooks (https://github.com/dissimulate)
+ * Copyright 2017-2021 Andreas Borgen (https://github.com/Sphinxxxx), Adam Brooks (https://github.com/dissimulate)
  * Released under the ISC license.
  */
 ;(function(root, factory) {
